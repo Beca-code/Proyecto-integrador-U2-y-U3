@@ -39,12 +39,12 @@
     <!-- App Bar -->
     <v-app-bar app>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>Application</v-toolbar-title>
+      <v-toolbar-title>Hernández Balderrábano Rebeca 22680149</v-toolbar-title>
     </v-app-bar>
 
     <!-- Main Content -->
     <v-main>
-      <router-view></router-view> <!-- Para rutaas -->
+      <router-view></router-view> <!-- Para rutas -->
     </v-main>
   </v-app>
 </template>
