@@ -76,47 +76,78 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'Home',
   data() {
     return {
-      nuevoTituloTarea: '',
-      tareas: []
+      nuevoTituloTarea: ''
     }
   },
+  computed: {
+    ...mapGetters({
+      tareas: 'todasLasTareas'
+    })
+  },
+  created() {
+    // Inicializar listener de Firebase al crear el componente
+    this.$store.dispatch('inicializarTareas')
+  },
   methods: {
-    agregarTarea() {
+    async agregarTarea() {
       if (!this.nuevoTituloTarea.trim()) return
-      const nTarea = {
-        id: Date.now(),
-        titulo: this.nuevoTituloTarea,
-        hecho: false,
-        editando: false
+      
+      try {
+        await this.$store.dispatch('agregarTarea', {
+          titulo: this.nuevoTituloTarea,
+          hecho: false
+        })
+        this.nuevoTituloTarea = ''
+      } catch (error) {
+        console.error('Error al agregar tarea:', error)
+        alert('Error al agregar la tarea. Por favor, intenta de nuevo.')
       }
-      this.tareas.push(nTarea)
-      this.nuevoTituloTarea = ''
     },
-    editarOGuardar(tarea) {
+    async editarOGuardar(tarea) {
       // Si está en modo edición, guardar
       if (tarea.editando) {
-        this.guardarEdicion(tarea)
+        await this.guardarEdicion(tarea)
       } else {
         // Si no, entrar en modo edición
         tarea.editando = true
+        await this.$store.dispatch('actualizarTarea', tarea)
       }
     },
-    guardarEdicion(tarea) {
-      tarea.editando = false
+    async guardarEdicion(tarea) {
+      try {
+        tarea.editando = false
+        await this.$store.dispatch('actualizarTarea', tarea)
+      } catch (error) {
+        console.error('Error al guardar edición:', error)
+        alert('Error al guardar los cambios.')
+      }
     },
-    toggleTarea(tarea) {
+    async toggleTarea(tarea) {
       // Solo cambiar el estado si no está en modo edición
       if (!tarea.editando) {
-        tarea.hecho = !tarea.hecho
+        try {
+          tarea.hecho = !tarea.hecho
+          await this.$store.dispatch('actualizarTarea', tarea)
+        } catch (error) {
+          console.error('Error al actualizar tarea:', error)
+          tarea.hecho = !tarea.hecho // Revertir cambio
+        }
       }
     },
-    BorrarTarea(id) {
+    async BorrarTarea(id) {
       if (confirm('¿Estás seguro de borrar la tarea?')) {
-        this.tareas = this.tareas.filter(t => t.id !== id)
+        try {
+          await this.$store.dispatch('eliminarTarea', id)
+        } catch (error) {
+          console.error('Error al borrar tarea:', error)
+          alert('Error al borrar la tarea.')
+        }
       }
     }
   }
